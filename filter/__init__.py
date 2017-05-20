@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
-import math
+
 
 def remove_range(list,boven,onder):
     newlist = []
@@ -79,6 +79,15 @@ def cal_speed(list):
 
     return combine_xyt(speed_x,speed_y,t)
 
+
+def invert(list):
+    new_list = []
+
+    for value in list:
+        new_list.append(-value)
+
+    return new_list
+
 def cal_acceleration(list):
     x,y,t = split_xyt(list)
 
@@ -154,11 +163,11 @@ def speed(list):
     x = remove_range(x,max(x)/20,-max(x)/20)
     y = remove_range(y, max(y)/20,-max(y)/20)
 
-    x_gem = gemmidelde(x,4)
-    y_gem = gemmidelde(y,4)
+    x_gem = speed_filter(x, 4)
+    y_gem = speed_filter(y, 4)
 
     t_gem = copy(t)
-    t_gem = remove_from_list(t_gem,8)
+    t_gem = remove_from_list(t_gem, 0)
 
     print len(x),len(y),len(t)
 
@@ -168,6 +177,10 @@ def speed(list):
 
     return snelheid,speed_full,speed_gem
 
+
+def speed_filter(x, N):
+    return np.convolve(x, np.ones((N,)) / N)[(N - 1):]
+
 def acceleration(list):
     versnelling = cal_acceleration(list)
     x,y,t = split_xyt(versnelling)
@@ -175,22 +188,30 @@ def acceleration(list):
     x = remove_range(x,max(x)/20,-max(x)/20)
     y = remove_range(y, max(y)/20,-max(y)/20)
 
-    x_gem = gemmidelde(x,2)
-    y_gem = gemmidelde(y,2)
+    x_new = []
 
-    t_gem = copy(t)
-    t_gem = remove_from_list(t_gem,4)
+    for x_point in x:
+        x_new.append(abs(x_point))
 
-    print len(x),len(y),len(t)
+    x = copy(x_new)
+    x_filter = speed_filter(x, 5)
+    y_filter = speed_filter(y, 5)
+    t_filter = copy(t)
+
+    t_filter = remove_from_list(t_filter, 0)
+
+    print len(x_filter), len(y_filter), len(t_filter)
 
     acceleration_full= combine_xyt(x,y,t)
 
-    acceleration_gem = combine_xyt(x_gem,y_gem,t_gem)
+    acceleration_gem = combine_xyt(x_filter, y_filter, t_filter)
+
+    print acceleration_gem
 
     return versnelling,acceleration_full,acceleration_gem
 
 
-def main(list):
+def main(list, output, ext, dpi):
     positie_u,positie = position(list)
     snelheid,speed_full,speed_gem= speed(list)
     versnelling, acceleration_full,acceleration_gem = acceleration(list)
@@ -211,28 +232,64 @@ def main(list):
     up_list_X   = offset(x_g, dev)
     down_list_X = offset(x_g,-dev)
 
-    up_list_Y   = offset(y_g, dev)
-    down_list_Y = offset(y_g,-dev)
+    up_list_Y = offset(invert(y_g), dev)
+    down_list_Y = offset(invert(y_g), -dev)
 
     a_up_list_X   = offset(x_ag, 2)
     a_down_list_X = offset(x_ag,-2)
 
-    plt.figure("Place X")
+    a_up_list_Y = offset(invert(y_ag), 1)
+    a_down_list_Y = offset(invert(y_ag), 1)
+
+    path = plt.figure("Path")
+    plt.title('Path')
+    plt.xlabel('place X (mm)')
+    plt.ylabel('place Y (mm)')
+    plt.plot(x_pu, invert(y_pu), 'gx', x_p, invert(y_p), "black")
+    path.savefig(output + "/Path" + ext, dpi=dpi)
+
+    x_place = plt.figure("Place X")
+    plt.title('Place X')
+    plt.xlabel('time (ms)')
+    plt.ylabel('place X (mm)')
     plt.plot(t_pu,x_pu,'gx',t_p,x_p,"black")
+    x_place.savefig(output + "/place X" + ext, dpi=dpi)
 
-    plt.figure("Place Y")
-    plt.plot(t_pu,y_pu,'gx',t_p,y_p,"black")
+    y_place = plt.figure("Place Y")
+    plt.title('Place Y')
+    plt.xlabel('time (ms)')
+    plt.ylabel('place y (mm)')
+    plt.plot(t_pu, invert(y_pu), 'gx', t_p, invert(y_p), "black")
+    y_place.savefig(output + "/place Y" + ext, dpi=dpi)
 
-    plt.figure("Speed X")
-    plt.plot(t_su,x_su,'gx',t_s,x_s,"rx",t_g,x_g,'b',t_g,up_list_X,'black',t_g,down_list_X,'black')
+    x_speed = plt.figure("Speed X")
+    plt.title('Speed X')
+    plt.xlabel('time (ms)')
+    plt.ylabel('speed X (m/s)')
+    plt.plot(t_su, x_su, 'gx', t_s, x_s, "rx", t_g, x_g, 'b')
+    x_speed.savefig(output + "/Speed X" + ext, dpi=dpi)
 
-    plt.figure("acceleration X")
+    y_speed = plt.figure("Speed Y")
+    plt.title('Speed Y')
+    plt.xlabel('time (ms)')
+    plt.ylabel('speed Y (m/s)')
+    plt.plot(t_su, invert(y_su), 'gx', t_s, invert(y_s), "rx", t_g, invert(y_g), 'b')
+    y_speed.savefig(output + "/Speed Y" + ext, dpi=dpi)
+
+    x_acc = plt.figure("acceleration X")
+    plt.title('acceleration X (beta version)')
+    plt.xlabel('time (ms)')
+    plt.ylabel('speed X (m/s^2)')
     plt.plot(t_au, x_au, 'gx', t_a, x_a, "rx", t_ag, x_ag, 'b', t_ag, a_up_list_X, 'black', t_ag, a_down_list_X,'black')
+    x_acc.savefig(output + "/acceleration X" + ext, dpi=dpi)
 
-    plt.figure("Speed Y")
-    plt.plot(t_su,y_su,'gx',t_s,y_s,"rx",t_g,y_g,'b',t_g,up_list_Y,'black',t_g,down_list_Y,'black')
-    plt.show()
-
+    y_acc = plt.figure("acceleration Y")
+    plt.title('acceleration Y (beta version)')
+    plt.xlabel('time (ms)')
+    plt.ylabel('speed Y (m/s^2)')
+    plt.plot(t_au, y_au, 'gx', t_a, invert(y_a), "rx", t_ag, invert(y_ag), 'b', t_ag, a_up_list_Y, 'black', t_ag,
+             a_down_list_Y, 'black')
+    y_acc.savefig(output + "/acceleration Y" + ext, dpi=dpi)
 
 if __name__ == '__main__':
     test_list_2 = [[3055.929591949627, 1950.3759366820545, 4.166666666666667],
@@ -450,10 +507,10 @@ if __name__ == '__main__':
                    [3676.2079527137676, 1580.6601691556405, 887.5000000000001],
                    [3671.8816494211164, 1582.6088221397654, 891.6666666666666],
                    [3666.17843728487, 1582.1922375819847, 895.8333333333334],
-                   [3401.903975437805, 1998.554727940459, 900.0000000000001],
-                   [3401.9091221946965, 1998.5497325587705, 904.1666666666667],
-                   [3401.9091221946965, 1998.5497325587705, 908.3333333333334]]
+                   [3401.903975437805, 1998.554727940459, 900.0000000000001]]
 
-    main(test_list_2)
+    dir = "path"
 
+    main(test_list_2, dir, '.jpg', 400)
 
+    print "done"
