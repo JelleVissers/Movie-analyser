@@ -213,7 +213,7 @@ def main(frame):
     global fps
     fps = frame
 
-    output = '/Users/jellevissers/Desktop/minor/test'
+    output = 'path'
     graph = grafiek(test_list_2,output)
     graph.plot(test_list_2,"position")
     graph.speed()
