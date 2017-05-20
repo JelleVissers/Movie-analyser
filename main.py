@@ -1,14 +1,14 @@
-import color
-import filter
-
-import cv2
-import tkFileDialog
-import numpy as np
 import math
-import os
-from Tkinter import *
+import tkFileDialog
 import tkMessageBox
 import tkSimpleDialog
+from Tkinter import *
+
+import cv2
+import numpy as np
+
+import color
+import filter
 
 filename    = None
 outputmap   = None
@@ -234,7 +234,7 @@ def analyse():
     if plot_ask:
         #plot gegevens
         print data
-        filter.main(data)
+        filter.main(data, outputmap, ".png", 400)
 
 class window:
     def __init__(self):
@@ -333,7 +333,7 @@ class window:
         frames_sec_var_label.place(x=220,y=235)
 
     def add_static_label(self):
-        input_static_label       = Label(self.window, text="Input plot")
+        input_static_label = Label(self.window, text="Input movie")
         output_static_label      = Label(self.window, text="Output directory")
         pix_mm_static_label      = Label(self.window, text="Pixelsize (mm)")
         col_min_static_label     = Label(self.window, text="Lower limit color")
@@ -343,8 +343,8 @@ class window:
         point_size_static_label  = Label(self.window, text="Minumum Size points")
         point_space_static_label = Label(self.window, text="Minimum Space points")
         frames_per_second_label  = Label(self.window, text="Frames per second")
-        inputfile_label = Label(self.window, text="Import plot from")
-        outputdir_label = Label(self.window, text="export files to")
+        inputfile_label = Label(self.window, text="Import movie from")
+        outputdir_label = Label(self.window, text="export plot to")
         fps_label = Label(self.window, text="Frames per second")
 
         input_static_label.place(x=20, y=10)
