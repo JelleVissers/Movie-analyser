@@ -207,4 +207,4 @@ def main(filename):
 
 
 if __name__ == '__main__':
-    main('/Users/jellevissers/Desktop/minor/3.mp4image.jpg')
+    main('path')
