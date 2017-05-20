@@ -410,4 +410,4 @@ def main(filename,ouputmap):
     return color_low,color_high,blur_image,blur_mask,blob,mm_pix,mouseblob
 
 if __name__ == "__main__":
-    main('/Users/jellevissers/Desktop/minor/3.mp4image.jpg')
+    main('path')
